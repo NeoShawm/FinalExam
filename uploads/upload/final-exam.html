@@ -1,0 +1,138 @@
+<html>
+<head>
+    <title>CSCI-610 -- Final Exam</title>
+    
+    <!-- VERTEX SHADER: Phong Shading -->
+    <script id="phong-V" type="x-shader/x-vertex">
+        #version 300 es
+        precision mediump float;
+
+        in vec3 aVertexPosition;
+        in vec3 aNormal;
+        in vec2 aUV;
+
+        uniform mat4 uModelMatrix;
+        uniform mat4 uViewMatrix;
+        uniform mat4 uProjectionMatrix;
+
+        out vec3 vNormal;
+        out vec3 vPosition; // Position in world space
+        out vec2 vUV;
+
+        void main() {
+            // Transform normal to world space (using inverse transpose for correct scaling)
+            vNormal = mat3(transpose(inverse(uModelMatrix))) * aNormal;
+            
+            // Transform position to world space
+            vec4 worldPos = uModelMatrix * vec4(aVertexPosition, 1.0);
+            vPosition = worldPos.xyz;
+            
+            vUV = aUV;
+
+            gl_Position = uProjectionMatrix * uViewMatrix * worldPos;
+        }
+    </script>
+
+     <!-- FRAGMENT SHADER: Phong Shading -->
+     <script id="phong-F" type="x-shader/x-fragment">
+         #version 300 es
+         precision mediump float;
+         
+         in vec3 vNormal;
+         in vec3 vPosition;
+         in vec2 vUV;
+
+         uniform vec3 uLightPosition;
+         uniform vec3 uViewPosition;
+         
+         // Material properties
+         uniform vec3 uColor;         // Base color if not textured
+         uniform bool uUseTexture;    // Toggle texture
+         uniform sampler2D uTexture;
+         
+         uniform float uKa; // Ambient coefficient
+         uniform float uKd; // Diffuse coefficient
+         uniform float uKs; // Specular coefficient
+         uniform float uShininess;
+
+         out vec4 fragColor;
+
+         void main(void) {
+             vec3 N = normalize(vNormal);
+             vec3 L = normalize(uLightPosition - vPosition);
+             vec3 V = normalize(uViewPosition - vPosition);
+             vec3 R = reflect(-L, N);
+
+             // Base Color selection
+             vec3 baseColor = uColor;
+             if (uUseTexture) {
+                 baseColor = texture(uTexture, vUV).rgb;
+             }
+
+             // Ambient
+             vec3 ambient = uKa * baseColor;
+
+             // Diffuse
+             float diff = max(dot(N, L), 0.0);
+             vec3 diffuse = uKd * diff * baseColor;
+
+             // Specular
+             float spec = 0.0;
+             if (diff > 0.0) {
+                 spec = pow(max(dot(V, R), 0.0), uShininess);
+             }
+             vec3 specular = uKs * spec * vec3(1.0, 1.0, 1.0); // Assume white light
+
+             fragColor = vec4(ambient + diffuse + specular, 1.0);
+         }
+
+     </script>
+     
+     <!-- Matrix library -->
+     <script type="text/javascript" src="gl-matrix-min.js"></script>
+    
+    <!-- Main Logic -->
+    <script type="text/javascript" src="./main.js"></script>
+    
+    <!-- Shape Classes -->
+    <script type="text/javascript" src="./cgIShape.js"></script>
+    <script type="text/javascript" src="./myShapes-min.js"></script>
+    
+    <!-- Event Handling -->
+    <script type="text/javascript" src="./event.js"></script>
+    
+    <!-- Texture Image: Ensure texture.jpg exists in the folder -->
+     <img id="my-texture" src="texture.jpg" style="display: none;"> </img>
+
+  <script type="text/javascript">
+    window.onload = init;
+  </script>
+</head>
+
+<body>
+  <h1>CSCI-610: Final Exam - Luxo Jr. Scene</h1>
+  <table>
+      <tr>
+          <td><canvas id="webgl-canvas" width="800" height="600">
+            Your browser does not support the HTML5 canvas element.
+          </canvas></td>
+          
+          <td>
+              <h3>Controls</h3>
+              <table border="1">
+              <tbody>
+              <tr>
+              <td>X / x</td>
+              <td>Rotate Camera Orbit</td>
+              </tr>
+              <tr>
+              <td>Y / y</td>
+              <td>Change Camera Height</td>
+              </tr>
+              </tbody>
+              </table>
+          </td>
+      </tr>
+  </table>
+</body>
+</html>

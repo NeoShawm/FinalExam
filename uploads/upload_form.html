@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Project Files</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; border: 1px solid #ccc; padding: 20px; border-radius: 8px; }
+        input[type="file"] { margin-bottom: 20px; }
+        button { background-color: #007BFF; color: white; border: none; padding: 10px 20px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Upload Project Files</h2>
+    <p>Select your JS, HTML, and JPG files to upload.</p>
+    
+    <form action="upload_handler.php" method="POST" enctype="multipart/form-data">
+        <label for="files">Choose files:</label><br><br>
+        
+        <input type="file" name="my_files[]" id="files" multiple required>
+        
+        <br>
+        <button type="submit" name="submit">Upload Files</button>
+    </form>
+</div>
+
+</body>
+</html>
